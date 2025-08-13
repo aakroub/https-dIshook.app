@@ -3,37 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKHUB - Webhook Builder</title>
+    <title data-lang-key="siteTitle">AKHUB - Webhook Builder</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts (Tajawal for Arabic) -->
+    <!-- Google Fonts (Tajawal for Arabic & Inter for English) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #313338;
-            color: #DBDEE1;
+        :root {
+            --bg-main: #313338;
+            --bg-secondary: #2B2D31;
+            --bg-input: #1E1F22;
+            --text-primary: #DBDEE1;
+            --text-secondary: #B5BAC1;
+            --border-color: #1E1F22;
+            --accent-color: #5865F2;
+            --accent-hover: #4752C4;
+            --success-color: #248046;
+            --danger-color: #DA373C;
         }
-        .bg-main { background-color: #313338; }
-        .bg-secondary { background-color: #2B2D31; }
-        .bg-input { background-color: #1E1F22; }
-        .border-custom { border-color: #1E1F22; }
-        .accent-color { color: #5865F2; }
-        .bg-accent { background-color: #5865F2; }
-        .hover-bg-accent:hover { background-color: #4752C4; }
-        .discord-preview { background-color: #313338; }
-        .embed-preview { border-right: 4px solid; }
+
+        html.light {
+            --bg-main: #F2F3F5;
+            --bg-secondary: #FFFFFF;
+            --bg-input: #E3E5E8;
+            --text-primary: #060607;
+            --text-secondary: #4E5058;
+            --border-color: #DCDDDE;
+            --accent-color: #5865F2;
+            --accent-hover: #4752C4;
+        }
+
+        body {
+            font-family: 'Inter', 'Tajawal', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+        }
+        
+        .bg-main { background-color: var(--bg-main); }
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .bg-input { background-color: var(--bg-input); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .border-custom { border-color: var(--border-color); }
+        .accent-color { color: var(--accent-color); }
+        .bg-accent { background-color: var(--accent-color); }
+        .hover\:bg-accent-hover:hover { background-color: var(--accent-hover); }
+
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #2B2D31; }
-        ::-webkit-scrollbar-thumb { background: #1E1F22; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-input); border-radius: 4px; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -42,12 +68,26 @@
     <header class="bg-secondary shadow-md z-10">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-4 space-x-reverse">
-                <i data-lucide="webhook" class="text-white w-8 h-8"></i>
-                <h1 class="text-xl font-bold text-white">AKHUB</h1>
+                <i data-lucide="webhook" class="text-primary w-8 h-8"></i>
+                <h1 class="text-xl font-bold text-primary" data-lang-key="mainTitle">AKHUB</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Language & Theme Toggles -->
+                <div class="flex items-center gap-2">
+                    <button id="lang-en" class="px-2 py-1 text-sm rounded-md bg-input text-secondary">EN</button>
+                    <button id="lang-ar" class="px-2 py-1 text-sm rounded-md bg-accent text-white">AR</button>
+                </div>
+                <label for="theme-toggle" class="flex items-center cursor-pointer">
+                    <div class="relative">
+                        <input type="checkbox" id="theme-toggle" class="sr-only">
+                        <div class="block bg-input w-14 h-8 rounded-full"></div>
+                        <div class="dot absolute left-1 top-1 bg-secondary w-6 h-6 rounded-full transition-transform"></div>
+                    </div>
+                </label>
             </div>
             <div class="flex items-center space-x-4 space-x-reverse">
-                <button id="clear-all-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors">مسح الكل</button>
-                <button id="send-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors">إرسال</button>
+                <button id="clear-all-btn" class="bg-danger-color hover:opacity-90 text-white font-bold py-2 px-4 rounded transition-colors" data-lang-key="clearAll">مسح الكل</button>
+                <button id="send-btn" class="bg-success-color hover:opacity-90 text-white font-bold py-2 px-4 rounded transition-colors" data-lang-key="send">إرسال</button>
             </div>
         </div>
     </header>
@@ -59,42 +99,31 @@
         <div id="controls-panel" class="w-full md:w-1/2 bg-secondary p-4 rounded-lg overflow-y-auto">
             <div class="space-y-4">
                 <div>
-                    <label for="webhook-url" class="block text-sm font-medium mb-1">رابط الويب هوك (Webhook URL)</label>
-                    <input type="text" id="webhook-url" class="w-full bg-input border border-custom rounded-md p-2 focus:ring-accent focus:border-accent" placeholder="أدخل رابط الويب هوك هنا...">
+                    <label for="webhook-url" class="block text-sm font-medium mb-1" data-lang-key="webhookUrlLabel">رابط الويب هوك (Webhook URL)</label>
+                    <input type="text" id="webhook-url" class="w-full bg-input border border-custom rounded-md p-2 focus:ring-accent focus:border-accent" data-lang-placeholder="webhookUrlPlaceholder">
                 </div>
-                
                 <hr class="border-custom">
-
-                <!-- Profile Section -->
                 <div>
-                    <h3 class="text-lg font-semibold mb-2">الملف الشخصي</h3>
+                    <h3 class="text-lg font-semibold mb-2" data-lang-key="profileTitle">الملف الشخصي</h3>
                     <div class="space-y-2">
                         <div>
-                            <label for="username" class="block text-sm font-medium mb-1">اسم المستخدم</label>
-                            <input type="text" id="username" class="w-full bg-input border border-custom rounded-md p-2" placeholder="اسم البوت (اختياري)">
+                            <label for="username" class="block text-sm font-medium mb-1" data-lang-key="usernameLabel">اسم المستخدم</label>
+                            <input type="text" id="username" class="w-full bg-input border border-custom rounded-md p-2" data-lang-placeholder="usernamePlaceholder">
                         </div>
                         <div>
-                            <label for="avatar-url" class="block text-sm font-medium mb-1">رابط الصورة الرمزية</label>
-                            <input type="text" id="avatar-url" class="w-full bg-input border border-custom rounded-md p-2" placeholder="رابط URL للصورة (اختياري)">
+                            <label for="avatar-url" class="block text-sm font-medium mb-1" data-lang-key="avatarUrlLabel">رابط الصورة الرمزية</label>
+                            <input type="text" id="avatar-url" class="w-full bg-input border border-custom rounded-md p-2" data-lang-placeholder="avatarUrlPlaceholder">
                         </div>
                     </div>
                 </div>
-
                 <hr class="border-custom">
-
-                <!-- Content Section -->
                 <div>
-                     <label for="content" class="block text-sm font-medium mb-1">المحتوى</label>
-                     <textarea id="content" rows="4" class="w-full bg-input border border-custom rounded-md p-2" placeholder="محتوى الرسالة الأساسي..."></textarea>
+                     <label for="content" class="block text-sm font-medium mb-1" data-lang-key="contentLabel">المحتوى</label>
+                     <textarea id="content" rows="4" class="w-full bg-input border border-custom rounded-md p-2" data-lang-placeholder="contentPlaceholder"></textarea>
                 </div>
-
                 <hr class="border-custom">
-                
-                <!-- Embeds Section -->
-                <div id="embeds-container" class="space-y-4">
-                    <!-- Embeds will be dynamically added here -->
-                </div>
-                <button id="add-embed-btn" class="w-full bg-accent hover-bg-accent text-white font-bold py-2 px-4 rounded transition-colors">إضافة Embed</button>
+                <div id="embeds-container" class="space-y-4"></div>
+                <button id="add-embed-btn" class="w-full bg-accent hover-bg-accent-hover text-white font-bold py-2 px-4 rounded transition-colors" data-lang-key="addEmbed">إضافة Embed</button>
             </div>
         </div>
 
@@ -105,13 +134,11 @@
                     <img id="preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-12 h-12 rounded-full" alt="Avatar">
                     <div>
                         <div class="flex items-center space-x-2 space-x-reverse">
-                            <span id="preview-username" class="font-bold text-white">Discohook</span>
+                            <span id="preview-username" class="font-bold text-primary">AKHUB</span>
                             <span class="text-xs bg-accent text-white px-1.5 py-0.5 rounded">BOT</span>
                         </div>
                         <p id="preview-content" class="mt-1 whitespace-pre-wrap"></p>
-                        <div id="preview-embeds-container" class="mt-2 space-y-2">
-                            <!-- Embed previews will be dynamically added here -->
-                        </div>
+                        <div id="preview-embeds-container" class="mt-2 space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -119,71 +146,166 @@
     </div>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
+        const translations = {
+            en: {
+                siteTitle: "AKHUB - Webhook Builder",
+                mainTitle: "AKHUB",
+                clearAll: "Clear All",
+                send: "Send",
+                webhookUrlLabel: "Webhook URL",
+                webhookUrlPlaceholder: "Enter Webhook URL here...",
+                profileTitle: "Profile",
+                usernameLabel: "Username",
+                usernamePlaceholder: "Bot Name (optional)",
+                avatarUrlLabel: "Avatar URL",
+                avatarUrlPlaceholder: "Image URL (optional)",
+                contentLabel: "Content",
+                contentPlaceholder: "Main message content...",
+                addEmbed: "Add Embed",
+                embedTitle: "Embed",
+                titlePlaceholder: "Title",
+                descriptionPlaceholder: "Description",
+                colorLabel: "Color:",
+                addField: "Add Field",
+                fieldNamePlaceholder: "Field Name",
+                fieldValuePlaceholder: "Field Value",
+                clearAllConfirm: "Are you sure you want to clear everything?",
+                webhookRequired: "Please enter a Webhook URL.",
+                sendSuccess: "Message sent successfully!",
+                sendFail: "Failed to send:",
+                networkError: "Network error:"
+            },
+            ar: {
+                siteTitle: "AKHUB - منشئ ويب هوك",
+                mainTitle: "AKHUB",
+                clearAll: "مسح الكل",
+                send: "إرسال",
+                webhookUrlLabel: "رابط الويب هوك (Webhook URL)",
+                webhookUrlPlaceholder: "أدخل رابط الويب هوك هنا...",
+                profileTitle: "الملف الشخصي",
+                usernameLabel: "اسم المستخدم",
+                usernamePlaceholder: "اسم البوت (اختياري)",
+                avatarUrlLabel: "رابط الصورة الرمزية",
+                avatarUrlPlaceholder: "رابط URL للصورة (اختياري)",
+                contentLabel: "المحتوى",
+                contentPlaceholder: "محتوى الرسالة الأساسي...",
+                addEmbed: "إضافة Embed",
+                embedTitle: "Embed",
+                titlePlaceholder: "عنوان",
+                descriptionPlaceholder: "وصف",
+                colorLabel: "اللون:",
+                addField: "إضافة حقل",
+                fieldNamePlaceholder: "اسم الحقل",
+                fieldValuePlaceholder: "قيمة الحقل",
+                clearAllConfirm: "هل أنت متأكد من أنك تريد مسح كل شيء؟",
+                webhookRequired: "الرجاء إدخال رابط الويب هوك.",
+                sendSuccess: "تم إرسال الرسالة بنجاح!",
+                sendFail: "فشل الإرسال:",
+                networkError: "خطأ في الشبكة:"
+            }
+        };
+
+        let currentLang = localStorage.getItem('language') || 'ar';
+        let embedCounter = 0;
+
         // DOM Elements
+        const langEnBtn = document.getElementById('lang-en');
+        const langArBtn = document.getElementById('lang-ar');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            document.documentElement.lang = lang;
+            document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                if (translations[lang][key]) el.textContent = translations[lang][key];
+            });
+            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                const key = el.dataset.langPlaceholder;
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
+            });
+
+            // Update button styles
+            if (lang === 'ar') {
+                langArBtn.classList.add('bg-accent', 'text-white');
+                langEnBtn.classList.remove('bg-accent', 'text-white');
+            } else {
+                langEnBtn.classList.add('bg-accent', 'text-white');
+                langArBtn.classList.remove('bg-accent', 'text-white');
+            }
+        }
+
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+                themeToggle.checked = true;
+            } else {
+                document.documentElement.classList.remove('light');
+                themeToggle.checked = false;
+            }
+            localStorage.setItem('theme', theme);
+        }
+        
+        // The rest of the script remains the same as the previous correct version...
+        // (The full script from the previous turn is included here for completeness)
         const webhookUrlInput = document.getElementById('webhook-url');
         const usernameInput = document.getElementById('username');
         const avatarUrlInput = document.getElementById('avatar-url');
         const contentInput = document.getElementById('content');
         const addEmbedBtn = document.getElementById('add-embed-btn');
         const embedsContainer = document.getElementById('embeds-container');
-        
         const previewUsername = document.getElementById('preview-username');
         const previewAvatar = document.getElementById('preview-avatar');
         const previewContent = document.getElementById('preview-content');
         const previewEmbedsContainer = document.getElementById('preview-embeds-container');
-
         const sendBtn = document.getElementById('send-btn');
         const clearAllBtn = document.getElementById('clear-all-btn');
 
-        let embedCounter = 0;
-
-        // --- Event Listeners ---
         usernameInput.addEventListener('input', updatePreview);
         avatarUrlInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
         addEmbedBtn.addEventListener('click', addEmbed);
         sendBtn.addEventListener('click', sendWebhook);
         clearAllBtn.addEventListener('click', clearAll);
-
-        // --- Functions ---
+        langEnBtn.addEventListener('click', () => setLanguage('en'));
+        langArBtn.addEventListener('click', () => setLanguage('ar'));
+        themeToggle.addEventListener('change', () => setTheme(themeToggle.checked ? 'light' : 'dark'));
 
         function addEmbed() {
             embedCounter++;
             const embedId = `embed-${embedCounter}`;
-
-            // Create Controls
             const embedControls = document.createElement('div');
             embedControls.id = `${embedId}-controls`;
             embedControls.className = 'bg-input p-3 rounded-md space-y-2 border border-custom';
             embedControls.innerHTML = `
                 <div class="flex justify-between items-center">
-                    <h4 class="font-semibold">Embed ${embedCounter}</h4>
+                    <h4 class="font-semibold">${translations[currentLang].embedTitle} ${embedCounter}</h4>
                     <button onclick="removeElement('${embedId}')" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                 </div>
-                <input type="text" class="w-full bg-secondary p-2 rounded" placeholder="عنوان" data-embed-id="${embedId}" data-prop="title">
-                <textarea class="w-full bg-secondary p-2 rounded" placeholder="وصف" data-embed-id="${embedId}" data-prop="description"></textarea>
+                <input type="text" class="w-full bg-secondary p-2 rounded" placeholder="${translations[currentLang].titlePlaceholder}" data-embed-id="${embedId}" data-prop="title">
+                <textarea class="w-full bg-secondary p-2 rounded" placeholder="${translations[currentLang].descriptionPlaceholder}" data-embed-id="${embedId}" data-prop="description"></textarea>
                 <div class="flex items-center">
-                    <label class="ml-2">اللون:</label>
+                    <label class="ml-2">${translations[currentLang].colorLabel}</label>
                     <input type="color" value="#5865F2" class="bg-secondary p-1 h-8 w-14 rounded" data-embed-id="${embedId}" data-prop="color">
                 </div>
                 <div id="${embedId}-fields" class="space-y-1"></div>
-                <button onclick="addField('${embedId}')" class="w-full text-sm bg-gray-600 hover:bg-gray-700 py-1 rounded">إضافة حقل (Field)</button>
+                <button onclick="addField('${embedId}')" class="w-full text-sm bg-gray-600 hover:bg-gray-700 py-1 rounded">${translations[currentLang].addField}</button>
             `;
             embedsContainer.appendChild(embedControls);
 
-            // Create Preview
             const embedPreview = document.createElement('div');
             embedPreview.id = `${embedId}-preview`;
             embedPreview.className = 'embed-preview bg-secondary rounded-md p-4';
             embedPreview.style.borderColor = '#5865F2';
             embedPreview.innerHTML = `
-                <div data-preview-prop="title" class="font-bold text-white text-lg"></div>
+                <div data-preview-prop="title" class="font-bold text-primary text-lg"></div>
                 <div data-preview-prop="description" class="mt-1 text-sm whitespace-pre-wrap"></div>
-                <div data-preview-prop="fields" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            `;
+                <div data-preview-prop="fields" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>`;
             previewEmbedsContainer.appendChild(embedPreview);
 
             lucide.createIcons();
@@ -197,10 +319,9 @@
             fieldControls.id = `${fieldId}-controls`;
             fieldControls.className = 'flex gap-2 items-center';
             fieldControls.innerHTML = `
-                <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="اسم الحقل" data-embed-id="${embedId}" data-prop="field-name">
-                <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="قيمة الحقل" data-embed-id="${embedId}" data-prop="field-value">
-                <button onclick="removeElement('${fieldId}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-4 h-4"></i></button>
-            `;
+                <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="${translations[currentLang].fieldNamePlaceholder}" data-embed-id="${embedId}" data-prop="field-name">
+                <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="${translations[currentLang].fieldValuePlaceholder}" data-embed-id="${embedId}" data-prop="field-value">
+                <button onclick="removeElement('${fieldId}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-4 h-4"></i></button>`;
             fieldContainer.appendChild(fieldControls);
             lucide.createIcons();
             addEventListenersToInputs();
@@ -220,47 +341,36 @@
         }
 
         function updatePreview() {
-            // Profile
-            previewUsername.textContent = usernameInput.value || 'Discohook';
+            previewUsername.textContent = usernameInput.value || 'AKHUB';
             previewAvatar.src = avatarUrlInput.value || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            
-            // Content
             previewContent.textContent = contentInput.value;
 
-            // Embeds
-            document.querySelectorAll('[id$="-controls"]').forEach(embedControl => {
-                if (!embedsContainer.contains(embedControl)) return;
+            document.querySelectorAll('[id^="embed-"][id$="-controls"]').forEach(embedControl => {
                 const embedId = embedControl.id.replace('-controls', '');
                 const preview = document.getElementById(`${embedId}-preview`);
                 if (!preview) return;
-
                 const titleInput = embedControl.querySelector(`[data-prop="title"]`);
                 const descInput = embedControl.querySelector(`[data-prop="description"]`);
                 const colorInput = embedControl.querySelector(`[data-prop="color"]`);
-
                 preview.querySelector(`[data-preview-prop="title"]`).textContent = titleInput.value;
                 preview.querySelector(`[data-preview-prop="description"]`).textContent = descInput.value;
                 preview.style.borderColor = colorInput.value;
-
-                // Fields
                 const fieldsPreviewContainer = preview.querySelector(`[data-preview-prop="fields"]`);
                 fieldsPreviewContainer.innerHTML = '';
                 const fieldNames = embedControl.querySelectorAll(`[data-prop="field-name"]`);
                 const fieldValues = embedControl.querySelectorAll(`[data-prop="field-value"]`);
-                
                 for (let i = 0; i < fieldNames.length; i++) {
                     const fieldDiv = document.createElement('div');
                     fieldDiv.innerHTML = `
-                        <div class="font-bold text-white text-sm">${fieldNames[i].value || '​'}</div>
-                        <div class="text-sm whitespace-pre-wrap">${fieldValues[i].value || '​'}</div>
-                    `;
+                        <div class="font-bold text-primary text-sm">${fieldNames[i].value || '​'}</div>
+                        <div class="text-sm whitespace-pre-wrap">${fieldValues[i].value || '​'}</div>`;
                     fieldsPreviewContainer.appendChild(fieldDiv);
                 }
             });
         }
 
         function clearAll() {
-            if (confirm('هل أنت متأكد من أنك تريد مسح كل شيء؟')) {
+            if (confirm(translations[currentLang].clearAllConfirm)) {
                 webhookUrlInput.value = '';
                 usernameInput.value = '';
                 avatarUrlInput.value = '';
@@ -275,27 +385,23 @@
         async function sendWebhook() {
             const url = webhookUrlInput.value.trim();
             if (!url) {
-                alert('الرجاء إدخال رابط الويب هوك.');
+                alert(translations[currentLang].webhookRequired);
                 return;
             }
-
             const payload = {
                 content: contentInput.value || null,
                 username: usernameInput.value || undefined,
                 avatar_url: avatarUrlInput.value || undefined,
                 embeds: []
             };
-
             document.querySelectorAll('[id^="embed-"][id$="-controls"]').forEach(embedControl => {
                 const embedData = {};
                 const title = embedControl.querySelector('[data-prop="title"]').value;
                 const description = embedControl.querySelector('[data-prop="description"]').value;
                 const color = embedControl.querySelector('[data-prop="color"]').value;
-
                 if (title) embedData.title = title;
                 if (description) embedData.description = description;
                 if (color) embedData.color = parseInt(color.substring(1), 16);
-
                 const fields = [];
                 const fieldNames = embedControl.querySelectorAll('[data-prop="field-name"]');
                 const fieldValues = embedControl.querySelectorAll('[data-prop="field-value"]');
@@ -305,38 +411,39 @@
                     }
                 }
                 if (fields.length > 0) embedData.fields = fields;
-                
                 if (Object.keys(embedData).length > 0) {
                     payload.embeds.push(embedData);
                 }
             });
-
             sendBtn.disabled = true;
-            sendBtn.textContent = 'جاري الإرسال...';
-
+            sendBtn.textContent = '...';
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
                 if (response.ok) {
-                    alert('تم إرسال الرسالة بنجاح!');
+                    alert(translations[currentLang].sendSuccess);
                 } else {
                     const error = await response.json();
-                    alert(`فشل الإرسال: ${response.status}\n${JSON.stringify(error, null, 2)}`);
+                    alert(`${translations[currentLang].sendFail} ${response.status}\n${JSON.stringify(error, null, 2)}`);
                 }
             } catch (error) {
-                alert(`حدث خطأ في الشبكة: ${error.message}`);
+                alert(`${translations[currentLang].networkError} ${error.message}`);
             } finally {
                 sendBtn.disabled = false;
-                sendBtn.textContent = 'إرسال';
+                sendBtn.textContent = translations[currentLang].send;
             }
         }
 
         // Initial setup
-        addEventListenersToInputs();
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+            setLanguage(currentLang);
+            addEventListenersToInputs();
+        });
     </script>
 </body>
 </html>
