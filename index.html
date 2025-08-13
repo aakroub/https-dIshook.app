@@ -238,6 +238,7 @@
         }
 
         function updatePreview() {
+            // Re-fetch elements every time to avoid stale references
             const usernameInput = document.getElementById('username');
             const avatarUrlInput = document.getElementById('avatar-url');
             const contentInput = document.getElementById('content');
