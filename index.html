@@ -30,7 +30,7 @@
         .bg-accent { background-color: #5865F2; }
         .hover-bg-accent:hover { background-color: #4752C4; }
         .discord-preview { background-color: #313338; }
-        .embed-preview { border-left: 4px solid; } /* Changed to left for LTR-style embed bar */
+        .embed-preview { border-left: 4px solid; } /* For LTR-style embed bar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #2B2D31; }
         ::-webkit-scrollbar-thumb { background: #1E1F22; border-radius: 4px; }
@@ -78,7 +78,7 @@
                 </div>
 
                 <div id="collapsible-sections" class="space-y-2">
-                    <div class="bg-input rounded-md border border-custom">
+                    <div id="profile-wrapper" class="bg-input rounded-md border border-custom">
                         <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                             <span>> Profile</span>
                             <div class="flex items-center space-x-2 space-x-reverse">
@@ -146,21 +146,6 @@
     <script>
         lucide.createIcons();
 
-        // --- DOM Element Getters ---
-        const getWebhookUrlInput = () => document.getElementById('webhook-url');
-        const getUsernameInput = () => document.getElementById('username');
-        const getAvatarUrlInput = () => document.getElementById('avatar-url');
-        const getContentInput = () => document.getElementById('content');
-        const getAddEmbedBtn = () => document.getElementById('add-embed-btn');
-        const getCollapsibleSections = () => document.getElementById('collapsible-sections');
-        const getSendBtn = () => document.getElementById('send-btn');
-        const getClearAllBtn = () => document.getElementById('clear-all-btn');
-
-        const getPreviewUsername = () => document.getElementById('preview-username');
-        const getPreviewAvatar = () => document.getElementById('preview-avatar');
-        const getPreviewContent = () => document.getElementById('preview-content');
-        const getPreviewEmbedsContainer = () => document.getElementById('preview-embeds-container');
-
         let embedCounter = 0;
 
         function addEventListenersToAllInputs() {
@@ -188,6 +173,7 @@
         function addEmbed() {
             embedCounter++;
             const embedId = `embed-${embedCounter}`;
+            const collapsibleSections = document.getElementById('collapsible-sections');
 
             const embedWrapper = document.createElement('div');
             embedWrapper.id = `${embedId}-wrapper`;
@@ -210,7 +196,7 @@
                         <button onclick="addField('${embedId}')" class="w-full text-sm bg-gray-600 hover:bg-gray-700 py-1 rounded">Add Field</button>
                     </div>
                 </div>`;
-            getCollapsibleSections().appendChild(embedWrapper);
+            collapsibleSections.appendChild(embedWrapper);
             
             const embedPreview = document.createElement('div');
             embedPreview.id = `${embedId}-preview`;
@@ -220,7 +206,7 @@
                 <div data-preview-prop="title" class="font-bold text-white text-lg"></div>
                 <div data-preview-prop="description" class="mt-1 text-sm whitespace-pre-wrap"></div>
                 <div data-preview-prop="fields" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>`;
-            getPreviewEmbedsContainer().appendChild(embedPreview);
+            document.getElementById('preview-embeds-container').appendChild(embedPreview);
 
             lucide.createIcons();
             addEventListenersToAllInputs();
@@ -243,15 +229,25 @@
         }
 
         function removeElement(id) {
-            document.getElementById(`${id}-wrapper`)?.remove();
-            document.getElementById(`${id}-preview`)?.remove();
+            const wrapperId = id.includes('field-') ? id : `${id}-wrapper`;
+            const previewId = id.includes('field-') ? null : `${id}-preview`;
+
+            document.getElementById(wrapperId)?.remove();
+            if(previewId) document.getElementById(previewId)?.remove();
             updatePreview();
         }
 
         function updatePreview() {
-            getPreviewUsername().textContent = getUsernameInput().value || 'AKHUB';
-            getPreviewAvatar().src = getAvatarUrlInput().value || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            getPreviewContent().textContent = getContentInput().value || 'Hey, welcome to Discohook...';
+            const usernameInput = document.getElementById('username');
+            const avatarUrlInput = document.getElementById('avatar-url');
+            const contentInput = document.getElementById('content');
+            const previewUsername = document.getElementById('preview-username');
+            const previewAvatar = document.getElementById('preview-avatar');
+            const previewContent = document.getElementById('preview-content');
+
+            previewUsername.textContent = usernameInput.value || 'AKHUB';
+            previewAvatar.src = avatarUrlInput.value || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            previewContent.textContent = contentInput.value || 'Hey, welcome to Discohook...';
 
             document.querySelectorAll('[id^="embed-"][id$="-wrapper"]').forEach(embedControl => {
                 const embedId = embedControl.id.replace('-wrapper', '');
@@ -283,11 +279,11 @@
 
         function clearAll() {
             if (confirm('Are you sure you want to clear everything?')) {
-                getWebhookUrlInput().value = '';
-                getContentInput().value = '';
-                const sections = getCollapsibleSections();
+                document.getElementById('webhook-url').value = '';
+                document.getElementById('content').value = '';
+                const sections = document.getElementById('collapsible-sections');
                 sections.innerHTML = `
-                    <div class="bg-input rounded-md border border-custom">
+                    <div id="profile-wrapper" class="bg-input rounded-md border border-custom">
                         <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                             <span>> Profile</span>
                             <div class="flex items-center space-x-2 space-x-reverse">
@@ -302,7 +298,7 @@
                             </div>
                         </div>
                     </div>`;
-                getPreviewEmbedsContainer().innerHTML = '';
+                document.getElementById('preview-embeds-container').innerHTML = '';
                 embedCounter = 0;
                 updatePreview();
                 addEventListenersToAllInputs();
@@ -310,16 +306,16 @@
         }
 
         async function sendWebhook() {
-            const url = getWebhookUrlInput().value.trim();
+            const url = document.getElementById('webhook-url').value.trim();
             if (!url) {
                 alert('Please enter a Webhook URL.');
                 return;
             }
 
             const payload = {
-                content: getContentInput().value || null,
-                username: getUsernameInput().value || undefined,
-                avatar_url: getAvatarUrlInput().value || undefined,
+                content: document.getElementById('content').value || null,
+                username: document.getElementById('username').value || undefined,
+                avatar_url: document.getElementById('avatar-url').value || undefined,
                 embeds: []
             };
 
@@ -348,7 +344,7 @@
                 }
             });
 
-            const sendButton = getSendBtn();
+            const sendButton = document.getElementById('send-btn');
             sendButton.disabled = true;
             sendButton.textContent = 'Sending...';
 
@@ -374,9 +370,9 @@
         }
         
         // Initial setup
-        getAddEmbedBtn().addEventListener('click', addEmbed);
-        getSendBtn().addEventListener('click', sendWebhook);
-        getClearAllBtn().addEventListener('click', clearAll);
+        document.getElementById('add-embed-btn').addEventListener('click', addEmbed);
+        document.getElementById('send-btn').addEventListener('click', sendWebhook);
+        document.getElementById('clear-all-btn').addEventListener('click', clearAll);
         addEventListenersToAllInputs();
         updatePreview();
     </script>
