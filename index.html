@@ -59,15 +59,13 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex-grow container mx-auto px-4 py-6 flex justify-center overflow-hidden">
+    <div class="flex-grow container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 overflow-hidden">
         
-        <!-- Main Panel -->
-        <div class="w-full max-w-4xl bg-secondary p-4 rounded-lg overflow-y-auto flex flex-col">
+        <!-- Controls Panel (Left) -->
+        <div class="w-full md:w-1/2 bg-secondary p-4 rounded-lg overflow-y-auto flex flex-col">
             <div class="flex-grow space-y-4">
-                <!-- Webhook URL Input -->
                 <input type="text" id="webhook-url" class="w-full bg-input border border-custom rounded-md p-2 focus:ring-accent focus:border-accent" placeholder="Webhook URL">
                 
-                <!-- Message 1 Section -->
                 <div class="bg-input p-3 rounded-md border border-custom">
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-semibold">Message 1</span>
@@ -79,9 +77,7 @@
                     <textarea id="content" rows="4" class="w-full bg-secondary p-2 rounded" placeholder="Content (2000/2000)"></textarea>
                 </div>
 
-                <!-- Collapsible Sections -->
                 <div id="collapsible-sections" class="space-y-2">
-                    <!-- Profile Section -->
                     <div class="bg-input rounded-md border border-custom">
                         <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                             <span>> Profile</span>
@@ -100,7 +96,6 @@
                     <!-- Embeds will be added here -->
                 </div>
                 
-                <!-- Action Row -->
                 <div class="bg-input p-3 rounded-md border border-custom">
                      <div class="flex justify-between items-center">
                         <span class="font-semibold">Row 1</span>
@@ -115,25 +110,42 @@
                     </div>
                      <button class="w-full mt-2 bg-gray-700 hover:bg-gray-600 py-2 rounded">Add Component</button>
                 </div>
-
             </div>
-
-            <!-- Footer Buttons -->
             <div class="mt-4 pt-4 border-t border-custom flex justify-between items-center">
                 <div class="flex items-center space-x-2 space-x-reverse">
                     <button id="add-embed-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Add Embed</button>
-                    <!-- More buttons can be added here -->
                 </div>
                 <button class="bg-accent hover-bg-accent text-white font-bold py-2 px-6 rounded-full text-lg">Add Message</button>
+            </div>
+        </div>
+
+        <!-- Preview Panel (Right) -->
+        <div class="w-full md:w-1/2 bg-secondary p-4 rounded-lg overflow-y-auto">
+            <div class="text-xs text-gray-400 mb-2">10:52 PM</div>
+            <div id="preview-panel" class="discord-preview p-4 rounded-md">
+                <div class="flex items-start space-x-4 space-x-reverse">
+                    <img id="preview-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="w-12 h-12 rounded-full" alt="Avatar">
+                    <div>
+                        <div class="flex items-center space-x-2 space-x-reverse">
+                            <span id="preview-username" class="font-bold text-white">AKHUB</span>
+                            <span class="text-xs bg-accent text-white px-1.5 py-0.5 rounded">APP</span>
+                        </div>
+                        <p id="preview-content" class="mt-1 whitespace-pre-wrap">Hey, welcome to Discohook...</p>
+                        <div id="preview-embeds-container" class="mt-2 space-y-2">
+                            <!-- Embed previews will be dynamically added here -->
+                        </div>
+                        <div id="preview-buttons-container" class="mt-2 flex items-center gap-2">
+                           <!-- Buttons preview will be added here -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // DOM Elements
         const webhookUrlInput = document.getElementById('webhook-url');
         const usernameInput = document.getElementById('username');
         const avatarUrlInput = document.getElementById('avatar-url');
@@ -143,30 +155,35 @@
         const sendBtn = document.getElementById('send-btn');
         const clearAllBtn = document.getElementById('clear-all-btn');
 
+        const previewUsername = document.getElementById('preview-username');
+        const previewAvatar = document.getElementById('preview-avatar');
+        const previewContent = document.getElementById('preview-content');
+        const previewEmbedsContainer = document.getElementById('preview-embeds-container');
+
         let embedCounter = 0;
 
-        // --- Event Listeners ---
-        addEmbedBtn.addEventListener('click', addEmbed);
-        sendBtn.addEventListener('click', sendWebhook);
-        clearAllBtn.addEventListener('click', clearAll);
-        
-        // Add event listeners for collapsible sections
+        function addEventListenersToInputs() {
+            document.querySelectorAll('#collapsible-sections input, #collapsible-sections textarea, #content, #username, #avatar-url').forEach(input => {
+                input.removeEventListener('input', updatePreview);
+                input.addEventListener('input', updatePreview);
+            });
+        }
+
         document.addEventListener('click', function (e) {
-            if (e.target.classList.contains('collapsible-trigger')) {
-                const content = e.target.nextElementSibling;
-                const triggerText = e.target.querySelector('span');
+            const trigger = e.target.closest('.collapsible-trigger');
+            if (trigger) {
+                const content = trigger.nextElementSibling;
+                const triggerTextSpan = trigger.querySelector('span');
                 if (content.style.maxHeight) {
                     content.style.maxHeight = null;
-                    triggerText.textContent = triggerText.textContent.replace('v ', '> ');
+                    triggerTextSpan.textContent = triggerTextSpan.textContent.replace('v ', '> ');
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
-                    triggerText.textContent = triggerText.textContent.replace('> ', 'v ');
+                    triggerTextSpan.textContent = triggerTextSpan.textContent.replace('> ', 'v ');
                 }
             }
         });
 
-
-        // --- Functions ---
         function addEmbed() {
             embedCounter++;
             const embedId = `embed-${embedCounter}`;
@@ -174,31 +191,39 @@
             const embedWrapper = document.createElement('div');
             embedWrapper.id = `${embedId}-wrapper`;
             embedWrapper.className = 'bg-input rounded-md border border-custom';
-            
             embedWrapper.innerHTML = `
                 <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                     <span>> Embed ${embedCounter}</span>
                     <div class="flex items-center space-x-2 space-x-reverse">
                         <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="eye"></i></button>
                         <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
-                        <button onclick="removeElement('${embedId}-wrapper'); event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
+                        <button onclick="removeElement('${embedId}'); event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
                     </div>
                 </button>
                 <div class="collapsible-content px-3 pb-3">
                     <div class="space-y-2 pt-2 border-t border-custom">
                         <input type="text" class="w-full bg-secondary p-2 rounded" placeholder="Title" data-embed-id="${embedId}" data-prop="title">
                         <textarea class="w-full bg-secondary p-2 rounded" placeholder="Description" data-embed-id="${embedId}" data-prop="description"></textarea>
-                        <div class="flex items-center">
-                            <label class="ml-2">Color:</label>
-                            <input type="color" value="#5865F2" class="bg-secondary p-1 h-8 w-14 rounded" data-embed-id="${embedId}" data-prop="color">
-                        </div>
+                        <div class="flex items-center"><label class="ml-2">Color:</label><input type="color" value="#5865F2" class="bg-secondary p-1 h-8 w-14 rounded" data-embed-id="${embedId}" data-prop="color"></div>
                         <div id="${embedId}-fields" class="space-y-1"></div>
                         <button onclick="addField('${embedId}')" class="w-full text-sm bg-gray-600 hover:bg-gray-700 py-1 rounded">Add Field</button>
                     </div>
-                </div>
-            `;
+                </div>`;
             collapsibleSections.appendChild(embedWrapper);
+            
+            const embedPreview = document.createElement('div');
+            embedPreview.id = `${embedId}-preview`;
+            embedPreview.className = 'embed-preview bg-secondary rounded-md p-4';
+            embedPreview.style.borderColor = '#5865F2';
+            embedPreview.innerHTML = `
+                <div data-preview-prop="title" class="font-bold text-white text-lg"></div>
+                <div data-preview-prop="description" class="mt-1 text-sm whitespace-pre-wrap"></div>
+                <div data-preview-prop="fields" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>`;
+            previewEmbedsContainer.appendChild(embedPreview);
+
             lucide.createIcons();
+            addEventListenersToInputs();
+            updatePreview();
         }
 
         function addField(embedId) {
@@ -210,14 +235,49 @@
             fieldControls.innerHTML = `
                 <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="Field Name" data-embed-id="${embedId}" data-prop="field-name">
                 <input type="text" class="w-1/2 bg-secondary p-1 rounded text-sm" placeholder="Field Value" data-embed-id="${embedId}" data-prop="field-value">
-                <button onclick="removeElement('${fieldId}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-4 h-4"></i></button>
-            `;
+                <button onclick="removeElement('${fieldId}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-4 h-4"></i></button>`;
             fieldContainer.appendChild(fieldControls);
             lucide.createIcons();
+            addEventListenersToInputs();
         }
 
         function removeElement(id) {
-            document.getElementById(id)?.remove();
+            document.getElementById(`${id}-wrapper`)?.remove();
+            document.getElementById(`${id}-preview`)?.remove();
+            updatePreview();
+        }
+
+        function updatePreview() {
+            previewUsername.textContent = usernameInput.value || 'AKHUB';
+            previewAvatar.src = avatarUrlInput.value || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            previewContent.textContent = contentInput.value || 'Hey, welcome to Discohook...';
+
+            document.querySelectorAll('[id^="embed-"][id$="-wrapper"]').forEach(embedControl => {
+                const embedId = embedControl.id.replace('-wrapper', '');
+                const preview = document.getElementById(`${embedId}-preview`);
+                if (!preview) return;
+
+                const titleInput = embedControl.querySelector(`[data-prop="title"]`);
+                const descInput = embedControl.querySelector(`[data-prop="description"]`);
+                const colorInput = embedControl.querySelector(`[data-prop="color"]`);
+
+                preview.querySelector(`[data-preview-prop="title"]`).textContent = titleInput.value;
+                preview.querySelector(`[data-preview-prop="description"]`).textContent = descInput.value;
+                preview.style.borderColor = colorInput.value;
+
+                const fieldsPreviewContainer = preview.querySelector(`[data-preview-prop="fields"]`);
+                fieldsPreviewContainer.innerHTML = '';
+                const fieldNames = embedControl.querySelectorAll(`[data-prop="field-name"]`);
+                const fieldValues = embedControl.querySelectorAll(`[data-prop="field-value"]`);
+                
+                for (let i = 0; i < fieldNames.length; i++) {
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.innerHTML = `
+                        <div class="font-bold text-white text-sm">${fieldNames[i].value || '​'}</div>
+                        <div class="text-sm whitespace-pre-wrap">${fieldValues[i].value || '​'}</div>`;
+                    fieldsPreviewContainer.appendChild(fieldDiv);
+                }
+            });
         }
 
         function clearAll() {
@@ -226,8 +286,26 @@
                 usernameInput.value = '';
                 avatarUrlInput.value = '';
                 contentInput.value = '';
-                collapsibleSections.innerHTML = ''; // Clear all embeds and other sections
+                collapsibleSections.innerHTML = `
+                    <div class="bg-input rounded-md border border-custom">
+                        <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
+                            <span>> Profile</span>
+                            <div class="flex items-center space-x-2 space-x-reverse">
+                                <button class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
+                                <button class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
+                            </div>
+                        </button>
+                        <div class="collapsible-content px-3 pb-3">
+                            <div class="space-y-2 pt-2 border-t border-custom">
+                                <input type="text" id="username" class="w-full bg-secondary p-2 rounded" placeholder="Username">
+                                <input type="text" id="avatar-url" class="w-full bg-secondary p-2 rounded" placeholder="Avatar URL">
+                            </div>
+                        </div>
+                    </div>`;
+                previewEmbedsContainer.innerHTML = '';
                 embedCounter = 0;
+                updatePreview();
+                addEventListenersToInputs();
             }
         }
 
@@ -293,6 +371,12 @@
                 sendBtn.textContent = 'Send';
             }
         }
+
+        addEmbedBtn.addEventListener('click', addEmbed);
+        sendBtn.addEventListener('click', sendWebhook);
+        clearAllBtn.addEventListener('click', clearAll);
+        addEventListenersToInputs();
+        updatePreview();
     </script>
 </body>
 </html>
