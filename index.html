@@ -82,8 +82,8 @@
                         <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                             <span>> Profile</span>
                             <div class="flex items-center space-x-2 space-x-reverse">
-                                <button class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
-                                <button class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
+                                <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
+                                <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
                             </div>
                         </button>
                         <div class="collapsible-content px-3 pb-3">
@@ -146,24 +146,25 @@
     <script>
         lucide.createIcons();
 
-        const webhookUrlInput = document.getElementById('webhook-url');
-        const usernameInput = document.getElementById('username');
-        const avatarUrlInput = document.getElementById('avatar-url');
-        const contentInput = document.getElementById('content');
-        const addEmbedBtn = document.getElementById('add-embed-btn');
-        const collapsibleSections = document.getElementById('collapsible-sections');
-        const sendBtn = document.getElementById('send-btn');
-        const clearAllBtn = document.getElementById('clear-all-btn');
+        // --- DOM Element Getters ---
+        const getWebhookUrlInput = () => document.getElementById('webhook-url');
+        const getUsernameInput = () => document.getElementById('username');
+        const getAvatarUrlInput = () => document.getElementById('avatar-url');
+        const getContentInput = () => document.getElementById('content');
+        const getAddEmbedBtn = () => document.getElementById('add-embed-btn');
+        const getCollapsibleSections = () => document.getElementById('collapsible-sections');
+        const getSendBtn = () => document.getElementById('send-btn');
+        const getClearAllBtn = () => document.getElementById('clear-all-btn');
 
-        const previewUsername = document.getElementById('preview-username');
-        const previewAvatar = document.getElementById('preview-avatar');
-        const previewContent = document.getElementById('preview-content');
-        const previewEmbedsContainer = document.getElementById('preview-embeds-container');
+        const getPreviewUsername = () => document.getElementById('preview-username');
+        const getPreviewAvatar = () => document.getElementById('preview-avatar');
+        const getPreviewContent = () => document.getElementById('preview-content');
+        const getPreviewEmbedsContainer = () => document.getElementById('preview-embeds-container');
 
         let embedCounter = 0;
 
-        function addEventListenersToInputs() {
-            document.querySelectorAll('#collapsible-sections input, #collapsible-sections textarea, #content, #username, #avatar-url').forEach(input => {
+        function addEventListenersToAllInputs() {
+            document.querySelectorAll('input, textarea').forEach(input => {
                 input.removeEventListener('input', updatePreview);
                 input.addEventListener('input', updatePreview);
             });
@@ -209,7 +210,7 @@
                         <button onclick="addField('${embedId}')" class="w-full text-sm bg-gray-600 hover:bg-gray-700 py-1 rounded">Add Field</button>
                     </div>
                 </div>`;
-            collapsibleSections.appendChild(embedWrapper);
+            getCollapsibleSections().appendChild(embedWrapper);
             
             const embedPreview = document.createElement('div');
             embedPreview.id = `${embedId}-preview`;
@@ -219,10 +220,10 @@
                 <div data-preview-prop="title" class="font-bold text-white text-lg"></div>
                 <div data-preview-prop="description" class="mt-1 text-sm whitespace-pre-wrap"></div>
                 <div data-preview-prop="fields" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>`;
-            previewEmbedsContainer.appendChild(embedPreview);
+            getPreviewEmbedsContainer().appendChild(embedPreview);
 
             lucide.createIcons();
-            addEventListenersToInputs();
+            addEventListenersToAllInputs();
             updatePreview();
         }
 
@@ -238,7 +239,7 @@
                 <button onclick="removeElement('${fieldId}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-4 h-4"></i></button>`;
             fieldContainer.appendChild(fieldControls);
             lucide.createIcons();
-            addEventListenersToInputs();
+            addEventListenersToAllInputs();
         }
 
         function removeElement(id) {
@@ -248,9 +249,9 @@
         }
 
         function updatePreview() {
-            previewUsername.textContent = usernameInput.value || 'AKHUB';
-            previewAvatar.src = avatarUrlInput.value || 'https://cdn.discordapp.com/embed/avatars/0.png';
-            previewContent.textContent = contentInput.value || 'Hey, welcome to Discohook...';
+            getPreviewUsername().textContent = getUsernameInput().value || 'AKHUB';
+            getPreviewAvatar().src = getAvatarUrlInput().value || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            getPreviewContent().textContent = getContentInput().value || 'Hey, welcome to Discohook...';
 
             document.querySelectorAll('[id^="embed-"][id$="-wrapper"]').forEach(embedControl => {
                 const embedId = embedControl.id.replace('-wrapper', '');
@@ -282,17 +283,16 @@
 
         function clearAll() {
             if (confirm('Are you sure you want to clear everything?')) {
-                webhookUrlInput.value = '';
-                usernameInput.value = '';
-                avatarUrlInput.value = '';
-                contentInput.value = '';
-                collapsibleSections.innerHTML = `
+                getWebhookUrlInput().value = '';
+                getContentInput().value = '';
+                const sections = getCollapsibleSections();
+                sections.innerHTML = `
                     <div class="bg-input rounded-md border border-custom">
                         <button class="w-full flex justify-between items-center p-3 text-left font-semibold collapsible-trigger">
                             <span>> Profile</span>
                             <div class="flex items-center space-x-2 space-x-reverse">
-                                <button class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
-                                <button class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
+                                <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="copy"></i></button>
+                                <button onclick="event.stopPropagation()" class="text-gray-400 hover:text-white"><i data-lucide="trash-2"></i></button>
                             </div>
                         </button>
                         <div class="collapsible-content px-3 pb-3">
@@ -302,24 +302,24 @@
                             </div>
                         </div>
                     </div>`;
-                previewEmbedsContainer.innerHTML = '';
+                getPreviewEmbedsContainer().innerHTML = '';
                 embedCounter = 0;
                 updatePreview();
-                addEventListenersToInputs();
+                addEventListenersToAllInputs();
             }
         }
 
         async function sendWebhook() {
-            const url = webhookUrlInput.value.trim();
+            const url = getWebhookUrlInput().value.trim();
             if (!url) {
                 alert('Please enter a Webhook URL.');
                 return;
             }
 
             const payload = {
-                content: contentInput.value || null,
-                username: usernameInput.value || undefined,
-                avatar_url: avatarUrlInput.value || undefined,
+                content: getContentInput().value || null,
+                username: getUsernameInput().value || undefined,
+                avatar_url: getAvatarUrlInput().value || undefined,
                 embeds: []
             };
 
@@ -348,8 +348,9 @@
                 }
             });
 
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
+            const sendButton = getSendBtn();
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
 
             try {
                 const response = await fetch(url, {
@@ -367,15 +368,16 @@
             } catch (error) {
                 alert(`Network error: ${error.message}`);
             } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
             }
         }
-
-        addEmbedBtn.addEventListener('click', addEmbed);
-        sendBtn.addEventListener('click', sendWebhook);
-        clearAllBtn.addEventListener('click', clearAll);
-        addEventListenersToInputs();
+        
+        // Initial setup
+        getAddEmbedBtn().addEventListener('click', addEmbed);
+        getSendBtn().addEventListener('click', sendWebhook);
+        getClearAllBtn().addEventListener('click', clearAll);
+        addEventListenersToAllInputs();
         updatePreview();
     </script>
 </body>
